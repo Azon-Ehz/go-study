@@ -26,8 +26,8 @@ func main() {
 	var numbers = []int{15, 16, 17, 18, 19}
 	//out := "欢迎您" + username + ", 回到到家"
 	fmt.Printf("欢迎您" + username + ", 回到到家 恭喜您已经" + strconv.Itoa(age) + "岁了\r\n") //第一种方式
-	fmt.Printf("欢迎回到到家,尊敬的%s 恭喜您已经%d岁了\r\n", username, age)                    //第二种方式
-	userMsg := fmt.Sprintf("欢迎回到到家,尊敬的%s 恭喜您已经%d岁了", username, age)            //第三种方式
+	fmt.Printf("欢迎回到到家,尊敬的%s 恭喜您已经%d岁了\r\n", username, age)                      //第二种方式
+	userMsg := fmt.Sprintf("欢迎回到到家,尊敬的%s 恭喜您已经%d岁了", username, age)              //第三种方式
 	fmt.Println(userMsg)
 	fmt.Printf("欢迎回到到家,尊敬的%s 恭喜您已经%T岁了\r\n", username, numbers)
 
