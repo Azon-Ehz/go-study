@@ -6,7 +6,7 @@ func main() {
 	//动态语言和静态语言 数组的定义差别在长度固定 静态语言是不允许在定义后对数组长度做调整的 比如append pop等操作
 
 	//go 是折中的 数组长度不一样 数组的类型都不一样 实际上是在弱化数组的功能 也就是降低数组的使用率
-	//而slice(切片)就是go折中方案的体现 但要记住的底层还是数组
+	//而slice(切片)就是go工程选择 的体现 但要记住的底层还是数组
 	var courses []string
 	fmt.Printf("%T \r\n", courses) //[]string 切片
 
@@ -24,7 +24,7 @@ func main() {
 	fmt.Println(allCoursesSlice)
 
 	//2.从切片创建切片
-	allCoursesSlice2 := allCourses[0:len(allCourses)] //左闭右开【)
+	allCoursesSlice2 := allCourses[0:len(allCoursesSlice)] //左闭右开【)
 	fmt.Println(allCoursesSlice2)
 
 	//3. 使用[]string{}
@@ -63,4 +63,14 @@ func main() {
 	mySlice[0] = "Java"
 	fmt.Println(mySliceCopy1) // := mySlice[:] 这种方式 如果你修改了源数据 那么被赋值的数据也会跟着修改 无关代码执行顺序
 	fmt.Println(mySliceCopy)  // copy函数 即使源数据被修改 copy后的值也不会被影响
+
+	/**
+	✅ slice 一定要记住的 6 句话
+	slice 是 对数组的视图
+	len决定你能访问多少
+	cap决定你能 append 多少
+	[:]共享底层数组
+	copy才是真拷贝
+	append可能换数组
+	*/
 }

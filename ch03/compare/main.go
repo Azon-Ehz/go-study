@@ -17,6 +17,7 @@ func main() {
 		fmt.Println("!=")
 	}
 
+	//比较过程（从左到右逐字节） 不是 ASCII 比较
 	if a > b {
 		fmt.Println("amax")
 	}

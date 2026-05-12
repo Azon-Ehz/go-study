@@ -11,10 +11,15 @@ func main() {
 	//如果你想知道一个包含中文的字符串长度要转切片 如果你只有英文 可以通过len直接获取
 	name := "Zinon"
 	title := "你好 Zinon"
-	bytes := []byte(title)
-	fmt.Println(len(name))
-	fmt.Println(len(bytes))
+	fmt.Println(len(name))          //len 字符串占多少字符
+	fmt.Println(len(title))         //len 字符串占多少字符
+	fmt.Println(len([]rune(title))) //Unicode 码点数量
 
+	if len("a") == len([]rune("a")) { //判断是否是 ASCII
+		fmt.Println("是ASCII")
+	} else {
+		fmt.Println("不是ASCII")
+	}
 	//转义符
 	//\r \t \n \' \" \? \\
 	courseName := "Go\r\n体系课"
