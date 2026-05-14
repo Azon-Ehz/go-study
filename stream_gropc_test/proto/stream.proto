@@ -1,7 +1,14 @@
 syntax = "proto3";
 
-option go_package = ".;proto";
+//option 可以定义你proto生成的文件位置
+//比如统一所有的pb.go文件 将所有的pb.go文件放到项目中指定文件夹 从而实现微服务共享
+//不需要再定义 直接定义option go_package 同时可以生成多语言 比如 java_package php_package
+option go_package = "common/stream/proto/v1;proto";
 
+
+/*
+protoc -I . --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative helloworld.proto
+*/
 service Greeter {
 	rpc GetStream(StreamReqData) returns (stream StreamResData); //服务器流模式
 	rpc PutStream(stream StreamReqData) returns (stream StreamResData);//客户端流模式
