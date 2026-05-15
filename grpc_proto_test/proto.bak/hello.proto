@@ -1,0 +1,27 @@
+syntax ="proto3"; //protobuf可以同等于文档
+import "google/protobuf/timestamp.proto";
+//go语言中预定义了大量的数据类型 我们使用的大部分类型都可以在其pb.go源码文件中找到，可以直接追查
+//如果你要使用 或者 在客户端传值的时候 你必须要追查到要使用类型的go_package 进行import后 才能继续使用
+//
+
+option go_package = ".;proto";
+
+service Greeter {
+    rpc Hello(HelloRequest) returns (Result);
+}
+
+
+enum Gender{
+    MALE = 0;
+    FEMALE = 1;
+}
+
+message HelloRequest{
+    string Name = 1;//切记是tag  是序号
+    Gender g = 3; //切记是tag  是序号
+    map<string,string> mp = 4;//切记是tag  是序号
+    google.protobuf.Timestamp AddTime = 5;//tag 序号
+}
+message Result{
+    string message = 1;
+}

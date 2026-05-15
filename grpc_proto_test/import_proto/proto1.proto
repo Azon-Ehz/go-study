@@ -20,6 +20,15 @@ message HelloRequest {
     string age  =  2;
 
 }
+
 message HelloResponse {
     string reply  =  1;
+    repeated Result data = 2;
+
+    //message的嵌套，他的意义实际上在针对部分只使用一次或为了避免tag冲突 进行嵌套定义
+    //在生成pb.go后 可以使用<HelloResponse_Result>使用，具体需要追查pb.go的源码
+    message Result {
+        string Name =1;
+        string url =2;
+    }
 }
