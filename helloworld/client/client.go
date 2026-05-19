@@ -1,22 +1,24 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/rpc"
+	"time"
+
+	"google.golang.org/grpc"
 )
 
 func main() {
 	//建立拨号 发起连接
-	client, err := rpc.Dial("tcp", "localhost:1234")
+	conn, err := grpc.Dial("127.0.0.1:8088", grpc.WithInsecure())
 	if err != nil {
-		panic("连接失败")
+		panic(err)
 	}
-
-	//var reply *string = new(string) //指针变量默认nil  new初始化创建地址
-	var reply string //初始化默认值 有地址
-	err = client.Call("HelloService.Hello", "Zinon", &reply)
+	defer conn.Close()
+	c := proto.NewGreeterClient(conn)
+	r, err := c.SayHello(context.Background(), &proto.HelloRequest{Name: "bobby"})
 	if err != nil {
-		panic("调用失败")
+		panic(err)
 	}
-	fmt.Println(reply)
+	fmt.Println(r.Message)
 }
