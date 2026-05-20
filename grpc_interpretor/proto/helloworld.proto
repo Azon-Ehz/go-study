@@ -3,7 +3,7 @@ syntax = "proto3";
 option go_package = ".;proto";
 
 service Greeter {
-    rpc SayHello(Request) returns (HelloReply)
+    rpc SayHello(Request) returns (HelloReply);
 }
 
 message Request {
