@@ -1,0 +1,97 @@
+一、什么是RPC？他到底是什么？
+全称是 <Remote Procedure Call> 远程过程调用 他是一种思想
+可以理解为是一种编程模型 他的核心思想是让远程服务像本地函数那样被调用
+他的本质依然是
+- callID         requestID/callID 请求标识/区分一次请求与响应的对应关系
+- 序列化/反序列化  json-jsonEncode/decode
+- 网络传输        TCP
+
+二、grpc和protobuf是什么关系 分别是什么？
+protobuf
+    负责“数据怎么编码”
+    一种数据序列化协议
+    同等于json/xml 但protobuf更小 更快 二进制
+
+gRPC
+    负责“服务怎么调用”。
+    是google实现的RPC框架 目标是让远程调用像本地函数调用
+    底层基于 HTTP/2。
+    gRPC 使用 protobuf 作为默认的数据描述与序列化方案
+
+
+三、proto
+为什么 proto 里的字段编号非常重要？
+    字段编号(tag)才是真正参与编码的东西
+    字段名本身不参与二进制传输
+    protobuf 字段编号重要的真正原因是：tag 是二进制协议里的真实字段标识
+
+为什么 protobuf 通常比 JSON 更小 更快？
+    JSON传输的是字符，而protobuf是二进制
+    JSON的字符中包含{"username":"Zinon"}
+    而protobuf则是 tag->type->value
+
+为什么 proto3 取消了 required 字段？
+    因为分布式系统永远存在版本差异 分布式系统 兼容性优先
+
+在proto文件中这一行描述着什么？protoc为什么不会直接生成struct
+    service Greeter {
+        rpc SayHello(HelloRequest) returns (HelloReply);
+    }
+    是指“这个服务必须有哪些能力” 谁想当 Greeter 服务 谁就必须实现 SayHello
+
+    gRPC 框架并不知道你的业务怎么实现
+    type Server struct {
+        proto.UnimplementedGreeterServer
+    }
+    func (s *Server) SayHello(...)
+    Server 才真正实现了 GreeterServer 接口
+
+
+
+为什么 gRPC 客户端通常是：
+conn, _ := grpc.Dial(...)
+client := pb.NewGreeterClient(conn) 并持续复用
+而不是每次调用都写一次
+
+因为新建连接很贵，对性能开销很大
+
+conn, err := grpc.Dial("127.0.0.1:50051",grpc.WithInsecure())
+这行代码是什么意思？
+
+这行代码我们拆开看
+conn, err := 创建新变量并接值
+grpc.Dial 拨号
+"127.0.0.1:50051" IP:PORT 拨号的目标地址
+grpc.WithInsecure() 是不需要LTS安全 采用明文HTTP/2
+
+ctx context.Context为什么必须写？他是什么？
+因为整个 Go 生态都强依赖它
+context 是“请求生命周期控制器” context = 请求控制器
+一个请求在整个调用链中的：
+- 超时
+
+- 停止/取消
+    ctx.Done()
+
+    ctx, cancel := context.WithTimeout(
+        context.Background(),
+        2*time.Second,
+    )
+    defer cancel()
+- 数据传递
+
+
+
+
+
+
+不是字段名。
+service
+client/server
+context
+interceptor
+metadata
+stream
+timeout
+error
+grpc-gateway

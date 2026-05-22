@@ -25,6 +25,21 @@ const (
 // GreeterClient is the client API for Greeter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// protoc \
+// --proto_path=. \
+// --go_out=. \
+// --validate_out="lang=go:." \
+// --go_opt=paths=source_relative \
+// --go-grpc_out=. \
+// --go-grpc_opt=paths=source_relative \
+// helloworld.proto
+//
+// | 参数             | 对应插件                |
+// | -------------- | ------------------- |
+// | --go_out       | protoc-gen-go       |
+// | --go-grpc_out  | protoc-gen-go-grpc  |
+// | --validate_out | protoc-gen-validate |
 type GreeterClient interface {
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
 }
@@ -50,6 +65,21 @@ func (c *greeterClient) SayHello(ctx context.Context, in *HelloRequest, opts ...
 // GreeterServer is the server API for Greeter service.
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility.
+//
+// protoc \
+// --proto_path=. \
+// --go_out=. \
+// --validate_out="lang=go:." \
+// --go_opt=paths=source_relative \
+// --go-grpc_out=. \
+// --go-grpc_opt=paths=source_relative \
+// helloworld.proto
+//
+// | 参数             | 对应插件                |
+// | -------------- | ------------------- |
+// | --go_out       | protoc-gen-go       |
+// | --go-grpc_out  | protoc-gen-go-grpc  |
+// | --validate_out | protoc-gen-validate |
 type GreeterServer interface {
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
 	mustEmbedUnimplementedGreeterServer()

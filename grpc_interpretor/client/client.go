@@ -1,6 +1,7 @@
 package main
 
 import (
+	"awesomeProject/grpc_interpretor/proto"
 	"context"
 	"fmt"
 	"time"

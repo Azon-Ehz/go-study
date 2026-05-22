@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option go_package=".;proto";
+
+//新版protoduf和grpc
+//这个服务实际上用到了三个工具
+//1. protoc  Protobuf 编译器
+
+//2. go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+//  Protobuf 代码生成器 把 message转成 Go struct
+
+//3. go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+//gRPC 代码生成插件 生成 gRPC 服务端 / 客户端接口
+
+
+//protoc -I . helloworld.proto --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative
+
+/*
+protoc \
+  --proto_path=. \
+  --go_out=. \
+  --validate_out="lang=go:." \
+  --go_opt=paths=source_relative \
+  --go-grpc_out=. \
+  --go-grpc_opt=paths=source_relative \
+  helloworld.proto
+
+| 参数             | 对应插件                |
+| -------------- | ------------------- |
+| --go_out       | protoc-gen-go       |
+| --go-grpc_out  | protoc-gen-go-grpc  |
+| --validate_out | protoc-gen-validate |
+
+*/
+service Greeter {
+    rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloReply {
+    string message = 1;
+}
