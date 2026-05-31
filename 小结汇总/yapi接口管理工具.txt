@@ -1,0 +1,12 @@
+github.com/Ryan-Miao/docker-yapi
+是基于docker部署的开源项目
+官方地址-github.com/YMFE/yapi
+yuque.com/bobby-zpcyu/hvbfzd/gccku()
+
+windows虚拟机安装docker 建议非本机
+
+
+部署yapi时出现问题 需要处理
+端口冲突
+yml文件格式过老
+下周继续学习

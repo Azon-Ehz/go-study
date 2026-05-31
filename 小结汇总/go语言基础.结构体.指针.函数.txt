@@ -1,0 +1,59 @@
+
+go中函数是“一等公民” 可以写出非常复杂的逻辑
+    1. 函数本身可以当作变量
+    2. 支持匿名函数 闭包函数
+    3. 函数可以满足接口
+ 定义一个函数
+ 定义  名称     入参          返回 可以定义返回的变量
+ func add(int a, int b) (sum int, err error){
+    sum = a+b
+    return 0,nil
+ }
+
+go语言中，全部都是值传递，没有引用传递
+
+函数参数在定义的时 可以定义变长
+定义  名称     入参 desc必传，但items是可选参数      返回 可以定义返回的变量
+ func add(desc string, items...int) (sum int, err error){
+    for _,val := range items {
+        sum += val
+    }
+    return
+ }
+
+ 函数可以作为变量
+ funcVar := add
+
+ 函数 可以入参函数 也 可以返回函数
+ func cal(op string, myFunc func(items ...int))func(){
+    return func(){
+        fmt.PrintIn()
+    }
+ }
+
+
+
+ 结构体
+ type 1.定义结构体 2.定义接口 3.定义类型别名
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
