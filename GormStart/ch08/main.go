@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	ID           uint           // Standard field for the primary key
-	Name         string         // A regular string field
+	MyName       string         `gorm:"column:name"` // A regular string field
 	Email        *string        // A pointer to a string, allowing for null values
 	Age          uint8          // An unsigned 8-bit integer
 	Birthday     *time.Time     // A pointer to time.Time, can be null
@@ -23,6 +23,7 @@ type User struct {
 	CreatedAt    time.Time      // Automatically managed by GORM for creation time
 	UpdatedAt    time.Time      // Automatically managed by GORM for update time
 	ignored      string         // fields that aren't exported are ignored
+	gorm.Model
 }
 
 func main() {
@@ -49,43 +50,23 @@ func main() {
 	}), &gorm.Config{
 		Logger: newLogger,
 	})
+	//_ = db.AutoMigrate(User{})
+	db.Create(&User{
+		MyName: "Zinon",
+		Age:    25,
+		Email:  nil,
+	})
 	if err != nil {
 		panic(err)
 	}
-	// 自动建表
-	_ = db.AutoMigrate(&User{}) //此处应该返回true
-
-	user := User{
-		Name:     "John Doe",
-		Email:    nil,
-		Age:      30,
-		Birthday: nil,
-	}
-	result := db.Create(&user)
-	user = User{
-		Name:     "Li Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
-
-	user = User{
-		Name:     "Jiang Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Omit("Name", "Age", "CreatedAt").Create(&user)
-	// INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
-
-	fmt.Println(user.ID)             //// 返回插入数据的主键
-	fmt.Println(result.Error)        //返回 error
-	fmt.Println(result.RowsAffected) //返回插入记录的条数
-	//db.Model(&User{ID: 1}).Update("name", "Zinon2")
-
-	//update可以更新零值 但updates则不行
-	//empty := ""
-	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	//主键删除
+	db.Delete(&User{}, 2)
+	//条件删除
+	db.Where("id = ?", 1).Delete(&User{})
+	user := User{}
+	//查询软删除记录
+	db.Unscoped().First(&user)
+	fmt.Println(user.ID)
+	//物理删除
+	db.Unscoped().Delete(user)
 }

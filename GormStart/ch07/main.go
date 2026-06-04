@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 type User struct {
 	ID           uint           // Standard field for the primary key
-	Name         string         // A regular string field
+	MyName       string         `gorm:"column:name"` // A regular string field
 	Email        *string        // A pointer to a string, allowing for null values
 	Age          uint8          // An unsigned 8-bit integer
 	Birthday     *time.Time     // A pointer to time.Time, can be null
@@ -52,40 +53,32 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// 自动建表
-	_ = db.AutoMigrate(&User{}) //此处应该返回true
 
-	user := User{
-		Name:     "John Doe",
-		Email:    nil,
-		Age:      30,
-		Birthday: nil,
+	var user User
+	result := db.Where("id = ?", 33333).First(&user)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("未找到")
 	}
-	result := db.Create(&user)
-	user = User{
-		Name:     "Li Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
+	user.MyName = "Zinon"
+	user.Age = 25
+	// 1. 通过save更新
+	// 根据主键判断执行 INSERT 还是 UPDATE
+	// 更新时会写入所有字段（包括零值）
+	db.Save(&user) //save方法是一个集create和update为一体d函数
+	// 2.通过update更新
+	// 更新单个字段
+	db.Model(&User{}).Update("name", "Ehz")
+	//3. updates更新
+	db.Model(&User{}).Select("name", "age").Where("name like ?", "Z%").Updates(&User{MyName: "Zinon", Age: 25}) // 指定更新哪些字段
+	db.Model(&User{}).Omit("name", "age").Where("name like ?", "").Updates(&User{MyName: "Zinon", Age: 25})     //声明不更新的字段
+	db.Model(&User{}).Select("name", "age").Where("name like ?", "").Updates(&User{MyName: "Zinon", Age: 25})   //声明可以写入0值的字段
+
+}
+func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	if u.Age == 25 {
+		if u.Age == 25 {
+			return errors.New("你已经25岁了，不允许更新")
+		}
 	}
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
-
-	user = User{
-		Name:     "Jiang Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Omit("Name", "Age", "CreatedAt").Create(&user)
-	// INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
-
-	fmt.Println(user.ID)             //// 返回插入数据的主键
-	fmt.Println(result.Error)        //返回 error
-	fmt.Println(result.RowsAffected) //返回插入记录的条数
-	//db.Model(&User{ID: 1}).Update("name", "Zinon2")
-
-	//update可以更新零值 但updates则不行
-	//empty := ""
-	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	return nil
 }

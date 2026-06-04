@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	ID           uint           // Standard field for the primary key
-	Name         string         // A regular string field
+	MyName       string         `gorm:"column:name"` // A regular string field
 	Email        *string        // A pointer to a string, allowing for null values
 	Age          uint8          // An unsigned 8-bit integer
 	Birthday     *time.Time     // A pointer to time.Time, can be null
@@ -52,40 +52,30 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// 自动建表
-	_ = db.AutoMigrate(&User{}) //此处应该返回true
 
-	user := User{
-		Name:     "John Doe",
-		Email:    nil,
-		Age:      30,
-		Birthday: nil,
-	}
-	result := db.Create(&user)
-	user = User{
-		Name:     "Li Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
+	var user User
+	var users User
+	// Get first matched record
+	db.Where("name = ?", "jinzhu").First(&user)
+	db.Where(&User{MyName: "jinzhu"}).First(&user)
+	// !=
+	db.Where("name <> ?", "jinzhu").Find(&users) //不加limit 多条记录
+	//IN
+	db.Where("name IN ?", []string{"jinzhu", "jinzhu 2"}).Find(&users)
+	//Like
+	db.Where("name LIKE ?", "jin%").Find(&users)
+	//AND
+	db.Where("name = ? AND age >= ?", "jinzhu", "22").Find(&users)
+	// Time
+	lastWeek := time.Now().AddDate(0, 0, -7)
+	db.Where("updated_at > ?", lastWeek).Find(&users)
+	today := time.Now().Truncate(24 * time.Hour)
+	//BETWEEN
+	db.Where("created_at BETWEEN ? AND ?", lastWeek, today).Find(&users)
+	db.Where(map[string]interface{}{"name": "jinzhu"}).First(&users)
+	fmt.Println(users)
 
-	user = User{
-		Name:     "Jiang Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Omit("Name", "Age", "CreatedAt").Create(&user)
-	// INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
-
-	fmt.Println(user.ID)             //// 返回插入数据的主键
-	fmt.Println(result.Error)        //返回 error
-	fmt.Println(result.RowsAffected) //返回插入记录的条数
-	//db.Model(&User{ID: 1}).Update("name", "Zinon2")
-
-	//update可以更新零值 但updates则不行
-	//empty := ""
-	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	//gorm查询方式条件有三种 1.string 2.struct 3.map
+	//第一种最灵活(后面两种满足时不考虑) 第二种会屏蔽细节(比如0值)但好维护 第三种可以解决第二种的坑 可读性也更强
+	//中高级开发必须要掌握sql 1.groupBy 2.Having子句 3.子查询
 }

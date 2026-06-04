@@ -25,6 +25,18 @@ type User struct {
 	ignored      string         // fields that aren't exported are ignored
 }
 
+type CreditCard struct {
+	gorm.Model
+	Number string `gorm:"default:410000000"`
+	UserID uint
+}
+
+type UserCard struct {
+	gorm.Model
+	Name       string
+	CreditCard CreditCard
+}
+
 func main() {
 	// 参考 https://github.com/go-sql-driver/mysql#dsn-data-source-name 获取详情
 	dsn := "root:123456@tcp(localhost:3307)/gorm?charset=utf8mb4&parseTime=True&loc=Local"
@@ -52,40 +64,34 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// 自动建表
-	_ = db.AutoMigrate(&User{}) //此处应该返回true
+	db.AutoMigrate(&User{}, &CreditCard{}, &UserCard{})
 
-	user := User{
-		Name:     "John Doe",
-		Email:    nil,
-		Age:      30,
-		Birthday: nil,
+	//插入 两种写入方式 1.struct 2.map
+	var users = []User{{Name: "jinzhu1"}, {Name: "jinzhu2"}, {Name: "jinzhu3"}}
+	//Create批量插入
+	//db.Create(&users)
+
+	//CreateInBatches 分批批量插入 分成几条sql写入
+	db.CreateInBatches(&users, 2)
+	for _, user := range users {
+		fmt.Println(user.ID) // 1,2,3
 	}
-	result := db.Create(&user)
-	user = User{
-		Name:     "Li Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
 
-	user = User{
-		Name:     "Jiang Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
-	}
-	db.Omit("Name", "Age", "CreatedAt").Create(&user)
-	// INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
+	//另一只写入的写法
+	db.Model(&User{}).Create(map[string]interface{}{
+		"Name": "jinzhu", "Age": 18,
+	})
 
-	fmt.Println(user.ID)             //// 返回插入数据的主键
-	fmt.Println(result.Error)        //返回 error
-	fmt.Println(result.RowsAffected) //返回插入记录的条数
-	//db.Model(&User{ID: 1}).Update("name", "Zinon2")
+	// batch insert from `[]map[string]interface{}{}`
+	db.Model(&User{}).Create([]map[string]interface{}{
+		{"Name": "jinzhu_1", "Age": 18},
+		{"Name": "jinzhu_2", "Age": 20},
+	})
 
-	//update可以更新零值 但updates则不行
-	//empty := ""
-	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	db.Create(&UserCard{
+		Name:       "jinzhu",
+		CreditCard: CreditCard{Number: "411111111111"},
+	})
+	// INSERT INTO `users` ...
+	// INSERT INTO `credit_cards` ...
 }

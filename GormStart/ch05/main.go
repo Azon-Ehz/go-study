@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -52,40 +53,46 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// 自动建表
-	_ = db.AutoMigrate(&User{}) //此处应该返回true
 
-	user := User{
-		Name:     "John Doe",
-		Email:    nil,
-		Age:      30,
-		Birthday: nil,
+	var users User
+	result := db.First(&users)
+	fmt.Println(users.ID)
+	errors.Is(result.Error, gorm.ErrRecordNotFound)
+
+	result = db.Take(&users)
+	fmt.Println(users.ID)
+
+	result = db.Last(&users)
+	fmt.Println(users.ID)
+
+	result = db.First(&users, 10)
+	fmt.Println(users.ID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("未找到")
 	}
-	result := db.Create(&user)
-	user = User{
-		Name:     "Li Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
+
+	result = db.First(&users, "12")
+	fmt.Println(users.ID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("未找到")
 	}
-	db.Select("Name", "Age", "CreatedAt").Create(&user)
 
-	user = User{
-		Name:     "Jiang Doe",
-		Email:    nil,
-		Age:      24,
-		Birthday: nil,
+	result = db.First(&users, []int{1, 2, 3, 4, 5, 6, 7, 8, 9})
+	fmt.Println(users.ID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		fmt.Println("未找到")
 	}
-	db.Omit("Name", "Age", "CreatedAt").Create(&user)
-	// INSERT INTO `users` (`name`,`age`,`created_at`) VALUES ("jinzhu", 18, "2020-07-04 11:05:21.775")
 
-	fmt.Println(user.ID)             //// 返回插入数据的主键
-	fmt.Println(result.Error)        //返回 error
-	fmt.Println(result.RowsAffected) //返回插入记录的条数
-	//db.Model(&User{ID: 1}).Update("name", "Zinon2")
+	var user []User
+	result = db.Find(&user, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}) // where in
+	result = db.Find(&user)                                   // no where
+	fmt.Printf("总记录数: %d\n", result.RowsAffected)
 
-	//update可以更新零值 但updates则不行
-	//empty := ""
-	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	for _, u := range user {
+		fmt.Println(u.ID)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			fmt.Println("未找到")
+		}
+	}
+
 }
