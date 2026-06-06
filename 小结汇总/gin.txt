@@ -1,0 +1,103 @@
+Gin
+    初始化路由对象
+	router := gin.Default()
+	定义Get请求路由 ("uri", func)
+	r.GET("/ping", pong) 这里pong是因为go的函数是一等公民 可以作为变量传递 func pong(c *gin.Context){}
+	返回JSON
+	c.JSON(http.StatusOK, gin.H{}
+	    三种写法
+		c.JSON(http.StatusOK, gin.H{
+    		"message": "Hello, World!",
+    	})
+    	c.JSON(http.StatusOK, map[string]string{
+    		"message": "Hello, World!",
+    	})
+    	c.JSON(http.StatusOK, map[string]interface{}{
+    		"message": "Hello, World!",
+    	})
+
+    启动服务
+    r.Run(":8383")
+
+    路由分组
+    router.Group()
+	    goodsGroup := router.Group("/goods")
+	    {
+    		goodsGroup.GET("", goodsList)
+	    	goodsGroup.GET("/:id/*action", goodsDetail)
+	    	goodsGroup.POST("", goodsAdd)
+    		goodsGroup.DELETE(":id", goodsDelete)
+    	}
+	    restful风格定义路由
+	    goodsGroup.POST("", goodsAdd)
+	    goodsGroup.DELETE(":id", goodsDelete)
+
+	路由参数绑定
+	router.GET("/:id/:name", func(context *gin.Context) {}
+	    获取uri参数及各个http参数
+	    context.ShouldBindUri(&person);
+        context.ShouldBindHeader()
+        context.ShouldBindQuery()
+        context.ShouldBindJSON()
+
+
+    JSON 响应（结构体序列化）
+        func testPost(c *gin.Context) {
+        	var msg struct { 匿名 struct + JSON tag
+        		Name    string `json:"username"` json:"username" 控制输出字段名，没 tag → 默认字段名（Message / Number）
+        		Message string
+        		Number  int
+        	}
+        	msg.Name = "Zinon"
+        	msg.Message = "这个一条测试Json-struct"
+        	msg.Number = 20
+
+        	c.JSON(http.StatusOK, msg)
+        }
+    ProtoBuf 响应
+        初始化返回的结构体
+        user := &proto.Teacher{
+        	Name:   "Zinon",
+        	Course: course,
+        }
+        使用googleProto protobuf 序列化/反序列化     googleProto "google.golang.org/protobuf/proto"
+    	data, err := googleProto.Marshal(user)
+    	if err != nil {
+    		panic(err)
+    	}
+    	err = googleProto.Unmarshal(data, user)
+    	if err != nil {
+    		panic(err)
+    	}
+    	//返回json
+    	c.JSON(http.StatusOK, user)
+    	如何返回protobuf
+    	c.Data(http.StatusOK, "application/x-protobuf", data)
+
+    PureJSON 响应 HTML原生返回
+    c.JSON	    可能 HTML 格式错误 如 "\u003cb\u003eHello\u003c/b\u003e"
+    c.PureJSON	保留原始字符 则是 "<b>Hello</b>"
+
+    Gin-Validator校验器(github.com/go-playground/validator/v10)+翻译器(github.com/go-playground/universal-translator)
+        表单结构体Tag —— binding:"required,min=3,max=10" 声明式校验规则
+        type SignUpForm struct {
+    	    Age uint8 `binding:"required,gte=1,lte=130"`
+    	    Name string `binding:"required,min=3"`
+    	    Email string `binding:"required,email"`
+    	    RePassword string `binding:"required,eqfield=Password"`
+        }
+
+    自动把请求参数绑定到 struct + 触发 validator 校验
+    c.ShouldBind(&loginForm)
+
+    validator 错误处理
+    errs, ok := err.(validator.ValidationErrors) 判断错误是不是“参数校验错误”
+
+    翻译器初始化（i18n核心） 引入了一个国际化组件，让 validator 的错误信息可以根据语言自动翻译成中文或者英文。
+    zhT := zh.New()
+    enT := en.New()
+    uni := ut.New(zhT, zhT, enT)
+    trans, ok = uni.GetTranslator(locale)
+
+    最后我把 validator 返回的错误统一交给翻译器处理
+    errs.Translate(trans)

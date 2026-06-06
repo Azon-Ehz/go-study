@@ -87,5 +87,5 @@ func main() {
 	//update可以更新零值 但updates则不行
 	//empty := ""
 	//db.Model(&User{ID: 1}).Updates(User{Email: &empty})
-	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX
+	//解决仅更新非零值的方法有两种 1.将string类型改为指针 *string 或者 sql.nullXXX(数据类型)
 }

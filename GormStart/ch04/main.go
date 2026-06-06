@@ -77,7 +77,7 @@ func main() {
 		fmt.Println(user.ID) // 1,2,3
 	}
 
-	//另一只写入的写法
+	//另一种写入的写法
 	db.Model(&User{}).Create(map[string]interface{}{
 		"Name": "jinzhu", "Age": 18,
 	})
