@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"reflect"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -32,6 +34,14 @@ type SignUpForm struct {
 func InitTrans(locale string) (err error) {
 	//修改gin框架中的validator引擎属性 实现定制
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		//注册获取 jsonTag 的自定义方法
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
 		zhT := zh.New() //中文翻译器
 		enT := en.New() //英文翻译器
 		//第一个是备用语言环境，后面的是应该支持的语言环境
@@ -66,6 +76,14 @@ func main() {
 	router.Run(":8383")
 }
 
+func removeTopStruct(fields map[string]string) map[string]string {
+	rsp := map[string]string{}
+	for field, err := range fields {
+		rsp[field[strings.Index(field, ".")+1:]] = err
+	}
+	return rsp
+}
+
 func LoginJson(c *gin.Context) {
 	var loginForm LoginForm
 	if err := c.ShouldBind(&loginForm); err != nil {
@@ -76,7 +94,7 @@ func LoginJson(c *gin.Context) {
 			})
 		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": errs.Translate(trans),
+			"error": removeTopStruct(errs.Translate(trans)),
 		})
 		return
 	}
@@ -98,7 +116,7 @@ func RegisterJson(c *gin.Context) {
 			})
 		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": errs.Translate(trans),
+			"error": removeTopStruct(errs.Translate(trans)),
 		})
 		return
 	}
